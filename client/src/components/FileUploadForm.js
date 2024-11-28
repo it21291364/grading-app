@@ -37,7 +37,7 @@ function FileUploadForm({ onLoading }) {
 
     try {
       await axios.post('http://localhost:5000/api/upload', formData);
-      navigate('/review'); // Navigate to loading page
+      navigate('/loading'); // Navigate to loading page
     } catch (error) {
       console.error('File upload failed', error);
     }

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// ReviewResults.js
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   TextField,
@@ -13,34 +14,65 @@ import {
   Box,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import axios from 'axios';
 
 const ReviewResults = () => {
-  const [studentData, setStudentData] = useState({
-    studentId: 'IT21258953',
-    totalMarks: 64,
-    questions: [
-      {
-        questionNo: 1,
-        question: 'Question Text',
-        answer: 'Correct Answer',
-        allocatedMarks: 10,
-        studentAnswer: 'Student Answer',
-        studentMarks: 5,
-        feedback: 'Good attempt'
-      },
-      // Add more question objects as needed
-    ],
-  });
+  const [studentData, setStudentData] = useState(null);
+  const [moduleData, setModuleData] = useState(null);
+  const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
+  const [studentList, setStudentList] = useState([]);
+
+  useEffect(() => {
+    const fetchStudentList = async () => {
+      const response = await axios.get('http://localhost:5000/api/grading/students');
+      setStudentList(response.data.students);
+    };
+
+    fetchStudentList();
+  }, []);
+
+  useEffect(() => {
+    if (studentList.length > 0) {
+      fetchStudentData(studentList[currentStudentIndex].studentId);
+    }
+  }, [studentList, currentStudentIndex]);
+
+  const fetchStudentData = async (studentId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/grading/student/${studentId}`);
+      setStudentData(response.data.student);
+      setModuleData(response.data.module);
+    } catch (error) {
+      console.error('Failed to fetch student data', error);
+    }
+  };
 
   const handleMarksChange = (index, value) => {
-    const updatedQuestions = [...studentData.questions];
-    updatedQuestions[index].studentMarks = value;
-    setStudentData({ ...studentData, questions: updatedQuestions });
+    const updatedAnswers = [...studentData.answers];
+    updatedAnswers[index].studentMarks = parseInt(value, 10);
+    setStudentData({ ...studentData, answers: updatedAnswers });
   };
 
-  const handleSubmit = () => {
-    // Handle submit and navigate to the next student
+  const handleSubmit = async () => {
+    try {
+      await axios.post(`http://localhost:5000/api/grading/student/${studentData.studentId}`, {
+        answers: studentData.answers,
+      });
+      // Move to next student
+      if (currentStudentIndex < studentList.length - 1) {
+        setCurrentStudentIndex(currentStudentIndex + 1);
+      } else {
+        // All students reviewed
+        // Navigate to download results page
+      }
+    } catch (error) {
+      console.error('Failed to update student data', error);
+    }
   };
+
+  if (!studentData || !moduleData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -70,37 +102,39 @@ const ReviewResults = () => {
               <TableCell>Student Answer</TableCell>
               <TableCell>Student Marks</TableCell>
               <TableCell>Feedback</TableCell>
-                          </TableRow>
+            </TableRow>
           </TableHead>
           <TableBody>
-            {studentData.questions.map((q, index) => (
-              <TableRow key={index}>
-                <TableCell>{q.questionNo}</TableCell>
-                <TableCell>{q.question}</TableCell>
-                <TableCell>{q.answer}</TableCell>
-                <TableCell>{q.allocatedMarks}</TableCell>
-                <TableCell>{q.studentAnswer}</TableCell>
-                <TableCell>
-                  <TextField
-                    type="number"
-                    value={q.studentMarks}
-                    onChange={(e) => handleMarksChange(index, e.target.value)}
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    type="text"
-                    value={q.feedback}
-                    InputProps={{ readOnly: true }}
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                
-              </TableRow>
-            ))}
+            {studentData.answers.map((answer, index) => {
+              const question = moduleData.questions.find(q => q.questionNo === answer.questionNo);
+              return (
+                <TableRow key={index}>
+                  <TableCell>{question.questionNo}</TableCell>
+                  <TableCell>{question.question}</TableCell>
+                  <TableCell>{question.expectedAnswer}</TableCell>
+                  <TableCell>{question.allocatedMarks}</TableCell>
+                  <TableCell>{answer.studentAnswer}</TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      value={answer.studentMarks}
+                      onChange={(e) => handleMarksChange(index, e.target.value)}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      type="text"
+                      value={answer.feedback}
+                      InputProps={{ readOnly: true }}
+                      variant="outlined"
+                      size="small"
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>

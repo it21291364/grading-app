@@ -35,14 +35,11 @@ function FileUploadForm({ onLoading }) {
     formData.append("markingGuide", markingGuide);
     formData.append("studentAnswers", studentAnswers);
 
-    onLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/upload', formData);
-      onLoading(false);
-      navigate('/loading'); // Navigate to loading page
+      await axios.post('http://localhost:5000/api/upload', formData);
+      navigate('/review'); // Navigate to loading page
     } catch (error) {
       console.error('File upload failed', error);
-      onLoading(false);
     }
   };
 

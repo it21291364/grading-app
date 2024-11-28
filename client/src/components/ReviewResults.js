@@ -1,5 +1,5 @@
 // ReviewResults.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -12,9 +12,11 @@ import {
   Paper,
   Button,
   Box,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import axios from 'axios';
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import LoadingPage from './LoadingPage';
 
 const ReviewResults = () => {
   const [studentData, setStudentData] = useState(null);
@@ -22,9 +24,13 @@ const ReviewResults = () => {
   const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
   const [studentList, setStudentList] = useState([]);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchStudentList = async () => {
-      const response = await axios.get('http://localhost:5000/api/grading/students');
+      const response = await axios.get(
+        "http://localhost:5000/api/grading/students"
+      );
       setStudentList(response.data.students);
     };
 
@@ -39,11 +45,13 @@ const ReviewResults = () => {
 
   const fetchStudentData = async (studentId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/grading/student/${studentId}`);
+      const response = await axios.get(
+        `http://localhost:5000/api/grading/student/${studentId}`
+      );
       setStudentData(response.data.student);
       setModuleData(response.data.module);
     } catch (error) {
-      console.error('Failed to fetch student data', error);
+      console.error("Failed to fetch student data", error);
     }
   };
 
@@ -55,28 +63,31 @@ const ReviewResults = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/grading/student/${studentData.studentId}`, {
-        answers: studentData.answers,
-      });
+      await axios.post(
+        `http://localhost:5000/api/grading/student/${studentData.studentId}`,
+        {
+          answers: studentData.answers,
+        }
+      );
       // Move to next student
       if (currentStudentIndex < studentList.length - 1) {
         setCurrentStudentIndex(currentStudentIndex + 1);
       } else {
         // All students reviewed
-        // Navigate to download results page
+        navigate("/download"); // Navigate to download results page
       }
     } catch (error) {
-      console.error('Failed to update student data', error);
+      console.error("Failed to update student data", error);
     }
   };
 
   if (!studentData || !moduleData) {
-    return <div>Loading...</div>;
+    return <LoadingPage />;
   }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <TextField
           label="Student ID"
           value={studentData.studentId}
@@ -106,7 +117,9 @@ const ReviewResults = () => {
           </TableHead>
           <TableBody>
             {studentData.answers.map((answer, index) => {
-              const question = moduleData.questions.find(q => q.questionNo === answer.questionNo);
+              const question = moduleData.questions.find(
+                (q) => q.questionNo === answer.questionNo
+              );
               return (
                 <TableRow key={index}>
                   <TableCell>{question.questionNo}</TableCell>
@@ -123,15 +136,7 @@ const ReviewResults = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>
-                    <TextField
-                      type="text"
-                      value={answer.feedback}
-                      InputProps={{ readOnly: true }}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </TableCell>
+                  <TableCell>{answer.feedback}</TableCell>
                 </TableRow>
               );
             })}
@@ -143,7 +148,7 @@ const ReviewResults = () => {
         variant="contained"
         color="primary"
         onClick={handleSubmit}
-        sx={{ mt: 3, float: 'right' }}
+        sx={{ mt: 3, float: "right" }}
         endIcon={<EditIcon />}
       >
         Submit & Next

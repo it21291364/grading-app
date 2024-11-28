@@ -36,8 +36,8 @@ This application is a full-stack solution that automates the grading of student 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ai-grading-app.git
-cd ai-grading-app
+git clone https://github.com/it21291364/grading-app.git
+cd grading-app
 ```
 
 ### 2. Install Backend Dependencies

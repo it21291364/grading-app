@@ -222,3 +222,33 @@ exports.downloadResults = async (req, res) => {
     res.status(500).json({ error: "Failed to download results" });
   }
 };
+
+// controllers/gradingController.js
+
+exports.getAllStudentResults = async (req, res) => {
+  try {
+    const students = await Student.find();
+    const module = await Module.findOne(); // Assuming one module
+
+    // Prepare data to send
+    const results = students.map((student) => {
+      const answerMarks = student.answers.map((ans) => ({
+        questionNo: ans.questionNo,
+        studentMarks: ans.studentMarks,
+      }));
+
+      return {
+        studentId: student.studentId,
+        answers: answerMarks,
+        totalMarks: student.totalMarks,
+      };
+    });
+
+    res.status(200).json({ results, module });
+  } catch (error) {
+    console.error('Failed to fetch all student results', error);
+    res.status(500).json({ error: 'Failed to fetch all student results' });
+  }
+};
+
+

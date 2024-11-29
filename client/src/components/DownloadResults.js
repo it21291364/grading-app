@@ -1,12 +1,29 @@
 // DownloadResults.js
-import React from 'react';
-import { Box, Button, Typography, IconButton, Tooltip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Typography, IconButton, Tooltip, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
 import HomeIcon from '@mui/icons-material/Home';
 
 function DownloadResults() {
   const navigate = useNavigate();
+  const [results, setResults] = useState([]);
+  const [moduleInfo, setModuleInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/grading/students/results');
+        setResults(response.data.results);
+        setModuleInfo(response.data.module);
+      } catch (error) {
+        console.error('Failed to fetch results', error);
+      }
+    };
+
+    fetchResults();
+  }, []);
+
   const handleDownload = async (format) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/grading/download/${format}`, {
@@ -35,8 +52,49 @@ function DownloadResults() {
             <HomeIcon sx={{ fontSize: 40 }} />
           </IconButton>
         </Tooltip>
-        <Typography variant="h4" gutterBottom sx={{ flexGrow: 1, textAlign: 'center' }}>Downloading Files</Typography>
+        <Typography variant="h4" gutterBottom sx={{ flexGrow: 1, textAlign: 'center' }}>Results Summary</Typography>
       </Box>
+
+      {moduleInfo && (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body1">Module Name: {moduleInfo.moduleName}</Typography>
+          <Typography variant="body1">Module Code: {moduleInfo.moduleCode}</Typography>
+          <Typography variant="body1">Academic Year: {moduleInfo.academicYear}</Typography>
+          <Typography variant="body1">Semester: {moduleInfo.semester}</Typography>
+          <Typography variant="body1">Batch: {moduleInfo.batch}</Typography>
+        </Box>
+      )}
+
+      <TableContainer component={Paper} sx={{ mb: 4 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Student ID</TableCell>
+              {/* Dynamically create question headers */}
+              {moduleInfo && moduleInfo.questions.map((question) => (
+                <TableCell key={question.questionNo}>Q{question.questionNo} Marks</TableCell>
+              ))}
+              <TableCell>Total Marks</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {results.map((student) => (
+              <TableRow key={student.studentId}>
+                <TableCell>{student.studentId}</TableCell>
+                {moduleInfo && moduleInfo.questions.map((question) => {
+                  const answer = student.answers.find(ans => ans.questionNo === question.questionNo);
+                  return (
+                    <TableCell key={question.questionNo}>{answer ? answer.studentMarks : 'N/A'}</TableCell>
+                  );
+                })}
+                <TableCell>{student.totalMarks}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>Download Results</Typography>
       <Typography variant="body1" sx={{ mb: 4, textAlign: 'center' }}>
         Please choose a format to download the student results.
       </Typography>

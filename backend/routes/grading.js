@@ -13,4 +13,6 @@ router.get('/students', gradingController.getStudentList);
 // routes/grading.js
 router.get('/download/:format', gradingController.downloadResults);
 
+router.get('/students/results', gradingController.getAllStudentResults);
+
 module.exports = router;

@@ -110,7 +110,7 @@ npm start
 Open a new terminal window:
 
 ```bash
-cd frontend
+cd client
 npm start
 ```
 
@@ -195,4 +195,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Material-UI**: For the frontend UI components.
 - **Contributors**: Rashen W.G.M. - IT21291364 - 24-25J-175
 
-![University Logo](https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ANew_Logo_of_SLIIT.png&psig=AOvVaw1CHP-BuMFcyN6lTWGqAzEh&ust=1733157157836000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKCEndf_hooDFQAAAAAdAAAAABAI)
+![University Logo](https://upload.wikimedia.org/wikipedia/commons/a/a0/New_Logo_of_SLIIT.png)

@@ -31,6 +31,10 @@ This application is a full-stack solution that automates the grading of student 
 - **OpenAI API Key**: A valid API key from OpenAI.
 - **Git**: For cloning the repository.
 
+## System Diagram
+
+![System Diagram](./assets/GENAI_AutoGrader_Diagram.drawio.png)
+
 ## Installation
 
 ### 1. Clone the Repository
@@ -190,3 +194,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **OpenAI**: For providing the GPT-3.5 language model and API.
 - **Material-UI**: For the frontend UI components.
 - **Contributors**: Rashen W.G.M. - IT21291364 - 24-25J-175
+
+![University Logo](./assets/sliit-logo.png)

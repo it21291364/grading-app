@@ -1,28 +1,18 @@
 const mongoose = require('mongoose');
 
-/**
- * @typedef {Object} StudentSchema
- * @property {String} studentId - The unique identifier for the student.
- * @property {String} moduleCode - The code of the module the student is enrolled in.
- * @property {Array.<Object>} answers - An array of answer objects.
- * @property {Number} answers.questionNo - The question number.
- * @property {String} answers.studentAnswer - The student's answer to the question.
- * @property {Number} answers.studentMarks - The marks awarded for the student's answer.
- * @property {String} answers.feedback - The feedback provided for the student's answer.
- * @property {Number} totalMarks - The total marks obtained by the student.
- */
+// Define the schema for a student
 const StudentSchema = new mongoose.Schema({
-  studentId: String,
-  moduleCode: String,
-  answers: [
+  studentId: String, // Unique ID for the student
+  moduleCode: String, // Module code the student is associated with
+  answers: [ // Array of answers submitted by the student
     {
-      questionNo: Number,
-      studentAnswer: String,
-      studentMarks: Number,
-      feedback: String,
+      questionNo: Number, // Question number
+      studentAnswer: String, // Student's answer text
+      studentMarks: Number, // Marks awarded for the answer
+      feedback: String, // Feedback provided for the answer
     },
   ],
-  totalMarks: Number,
+  totalMarks: Number, // Total marks awarded to the student
 });
 
 module.exports = mongoose.model('Student', StudentSchema);

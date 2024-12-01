@@ -33,7 +33,7 @@ This application is a full-stack solution that automates the grading of student 
 
 ## System Diagram
 
-![System Diagram](https://imgur.com/a/CvlsTCD)
+![System Diagram](https://i.imgur.com/KPSY5pV.png)
 
 ## Installation
 

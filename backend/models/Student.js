@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const StudentSchema = new mongoose.Schema({
   studentId: String, // Unique ID for the student
   moduleCode: String, // Module code the student is associated with
+  moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module' }, // Reference to the module
   answers: [ // Array of answers submitted by the student
     {
       questionNo: Number, // Question number

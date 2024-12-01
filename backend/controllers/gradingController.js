@@ -9,9 +9,14 @@ const OpenAI = require("openai"); // OpenAI library for grading using GPT
  */
 exports.startGrading = async (req, res) => {
   try {
-    // Fetch all students and the associated module data
-    const students = await Student.find(); // Retrieve all student documents
-    const module = await Module.findOne(); // Retrieve a single module (assumes one module is active)
+    const { moduleId } = req.params;
+
+    const students = await Student.find({ moduleId });
+    const module = await Module.findById(moduleId);
+
+    if (!module) {
+      return res.status(404).json({ error: "Module not found" });
+    }
 
     // Initialize OpenAI API client with the API key from environment variables
     const openai = new OpenAI({
@@ -129,16 +134,19 @@ Provide the output in the following JSON format:
  */
 exports.getStudentResults = async (req, res) => {
   try {
-    const { studentId } = req.params; // Extract student ID from the request parameters
-    const student = await Student.findOne({ studentId }); // Find the student document
+    const { studentId, moduleId  } = req.params; // Extract student ID from the request parameters
+    const student = await Student.findOne({ studentId, moduleId  }); // Find the student document
 
     // Return 404 if the student is not found
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
 
-    // Fetch the module associated with the student's module code
-    const module = await Module.findOne({ moduleCode: student.moduleCode });
+    const module = await Module.findById(moduleId);
+
+    if (!module) {
+      return res.status(404).json({ error: "Module not found" });
+    }
 
     // Respond with the student and module data
     res.status(200).json({ student, module });
@@ -153,11 +161,11 @@ exports.getStudentResults = async (req, res) => {
  */
 exports.updateStudentResults = async (req, res) => {
   try {
-    const { studentId } = req.params; // Extract student ID from the request parameters
+    const { studentId, moduleId  } = req.params; // Extract student ID from the request parameters
     const { answers } = req.body; // Extract updated answers from the request body
 
     // Find the student record in the database
-    const student = await Student.findOne({ studentId });
+    const student = await Student.findOne({ studentId, moduleId  });
 
     // Return 404 if the student is not found
     if (!student) {
@@ -187,7 +195,8 @@ exports.updateStudentResults = async (req, res) => {
  */
 exports.getStudentList = async (req, res) => {
   try {
-    const students = await Student.find({}, "studentId"); // Fetch all student IDs
+    const { moduleId } = req.params; // Extract module ID from the request parameters
+    const students = await Student.find({moduleId}, "studentId"); // Fetch all student IDs
     res.status(200).json({ students }); // Respond with the student list
   } catch (error) {
     console.error("Failed to fetch student list", error);
@@ -201,9 +210,13 @@ exports.getStudentList = async (req, res) => {
  */
 exports.downloadResults = async (req, res) => {
   try {
-    const { format } = req.params; // Extract the desired format from the request parameters
-    const students = await Student.find(); // Retrieve all student records from the database
-    const module = await Module.findOne(); // Retrieve the module data (assumes only one module)
+    const { format, moduleId } = req.params; // Extract the desired format from the request parameters
+    const students = await Student.find({moduleId }); // Retrieve all student records from the database
+    const module = await Module.findById(moduleId ); // Retrieve the module data (assumes only one module)
+
+    if (!module) {
+      return res.status(404).json({ error: "Module not found" });
+    }
 
     // Check the requested format and handle accordingly
     if (format === "excel") {
@@ -231,7 +244,13 @@ exports.downloadResults = async (req, res) => {
       students.forEach((student) => {
         const row = [
           student.studentId, // Add the student's ID
-          ...student.answers.map((ans) => ans.studentMarks), // Add the marks for each question
+          ...module.questions.map((q) => {
+            // Find the student's answer for each question
+            const answer = student.answers.find(
+              (ans) => ans.questionNo === q.questionNo
+            );
+            return answer ? answer.studentMarks : "N/A"; // Add the marks or 'N/A' if not available
+          }),
           student.totalMarks, // Add the total marks
         ];
         worksheet.addRow(row);
@@ -266,8 +285,13 @@ exports.downloadResults = async (req, res) => {
  */
 exports.getAllStudentResults = async (req, res) => {
   try {
-    const students = await Student.find(); // Retrieve all student records from the database
-    const module = await Module.findOne(); // Retrieve the module data (assumes only one module)
+    const { moduleId } = req.params; // Extract module ID from the request parameters
+    const students = await Student.find({moduleId }); // Retrieve all student records from the database
+    const module = await Module.findById(moduleId ); // Retrieve the module data (assumes only one module)
+
+    if (!module) {
+      return res.status(404).json({ error: "Module not found" });
+    }
 
     // Prepare the results data to be sent in the response
     const results = students.map((student) => {

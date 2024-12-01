@@ -28,13 +28,14 @@ function DownloadResults() {
   useEffect(() => {
     const fetchResults = async () => {
       try {
+        const moduleId = localStorage.getItem('moduleId');
         const response = await axios.get(
-          "http://localhost:5000/api/grading/students/results"
-        ); // API call to fetch results
-        setResults(response.data.results); // Set fetched results in state
-        setModuleInfo(response.data.module); // Set fetched module info in state
+          `http://localhost:5000/api/grading/students/results/${moduleId}`
+        );
+        setResults(response.data.results);
+        setModuleInfo(response.data.module);
       } catch (error) {
-        console.error("Failed to fetch results", error); // Log errors if fetching fails
+        console.error('Failed to fetch results', error);
       }
     };
 
@@ -49,8 +50,9 @@ function DownloadResults() {
   // Function to handle downloading results in different formats
   const handleDownload = async (format) => {
     try {
+      const moduleId = localStorage.getItem('moduleId');
       const response = await axios.get(
-        `http://localhost:5000/api/grading/download/${format}`,
+        `http://localhost:5000/api/grading/download/${moduleId}/${format}`,
         {
           responseType: "blob", // Ensure the response is treated as a file blob
         }

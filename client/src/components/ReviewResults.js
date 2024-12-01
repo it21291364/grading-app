@@ -15,7 +15,6 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import LoadingPage from "./LoadingPage";
 import LoadingIndicator from "./LoadingIndicator";
 
 // Define the ReviewResults component
@@ -30,27 +29,34 @@ const ReviewResults = () => {
   // Fetch the list of students when the component mounts
   useEffect(() => {
     const fetchStudentList = async () => {
+      const moduleId = localStorage.getItem("moduleId");
       const response = await axios.get(
-        "http://localhost:5000/api/grading/students" // API call to fetch the list of students
+        `http://localhost:5000/api/grading/students/${moduleId}` // API call to fetch the list of students
       );
-      setStudentList(response.data.students); // Store the fetched student list in state
+      if (response.data.students.length > 0) {
+        setStudentList(response.data.students); // Store the fetched student list in state
+      } else {
+        alert("No students found for this module.");
+        navigate("/download");
+      }
     };
 
     fetchStudentList(); // Call the function to fetch the student list
-  }, []);
+  }, [navigate]);
 
   // Fetch the current student's data whenever the student list or current index changes
   useEffect(() => {
     if (studentList.length > 0) {
-      fetchStudentData(studentList[currentStudentIndex].studentId); // Fetch data for the student at the current index
+      const moduleId = localStorage.getItem("moduleId");
+      fetchStudentData(studentList[currentStudentIndex].studentId, moduleId); // Fetch data for the student at the current index
     }
   }, [studentList, currentStudentIndex]); // Re-run this effect whenever studentList or currentStudentIndex changes
 
   // Function to fetch data for a specific student
-  const fetchStudentData = async (studentId) => {
+  const fetchStudentData = async (studentId, moduleId) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/grading/student/${studentId}` // API call to fetch a specific student's data
+        `http://localhost:5000/api/grading/student/${moduleId}/${studentId}`
       );
       setStudentData(response.data.student); // Store the fetched student data in state
       setModuleData(response.data.module); // Store the fetched module data in state
@@ -69,9 +75,10 @@ const ReviewResults = () => {
   // Handle submission of updated marks and move to the next student
   const handleSubmit = async () => {
     try {
+      const moduleId = localStorage.getItem("moduleId"); // Retrieve moduleId from localStorage
       // Send the updated answers to the backend
       await axios.post(
-        `http://localhost:5000/api/grading/student/${studentData.studentId}`, // API endpoint for updating student data
+        `http://localhost:5000/api/grading/student/${moduleId}/${studentData.studentId}`, // Include moduleId in the endpoint
         {
           answers: studentData.answers, // Send the updated answers
         }
@@ -86,6 +93,7 @@ const ReviewResults = () => {
       }
     } catch (error) {
       console.error("Failed to update student data", error);
+      alert("An error occurred while updating student data. Please try again.");
     }
   };
 

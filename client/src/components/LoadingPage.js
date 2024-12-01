@@ -13,7 +13,16 @@ function LoadingPage() {
       try {
         if (!gradingStarted) {
           setGradingStarted(true);
-          await axios.get("http://localhost:5000/api/grading/start");
+          const moduleId = localStorage.getItem('moduleId'); // Retrieve moduleId from localStorage
+
+          if (!moduleId) {
+            console.error('Module ID not found');
+            // Optionally, navigate back to the home page or show an error message
+            navigate('/');
+            return;
+          }
+
+          await axios.get(`http://localhost:5000/api/grading/start/${moduleId}`); // Include moduleId in the API call
           navigate("/review");
         }
       } catch (error) {

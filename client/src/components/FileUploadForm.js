@@ -40,11 +40,16 @@ function FileUploadForm({ onLoading }) {
     formData.append("studentAnswers", studentAnswers); // Add students' answers file
 
     try {
-      // Send a POST request to the backend to upload files and data
-      await axios.post("http://localhost:5000/api/upload", formData);
+      const response = await axios.post(
+        "http://localhost:5000/api/upload",
+        formData
+      );
+      const moduleId = response.data.moduleId; // Get moduleId from the response
+      // Store moduleId for use in other components (e.g., local storage)
+      localStorage.setItem("moduleId", moduleId);
       navigate("/loading"); // Navigate to loading page
     } catch (error) {
-      console.error("File upload failed", error); // Log any errors that occur during the upload
+      console.error("File upload failed", error);
     }
   };
 

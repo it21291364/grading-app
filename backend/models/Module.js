@@ -16,6 +16,6 @@ const ModuleSchema = new mongoose.Schema({
       allocatedMarks: Number, // Marks allocated for the question
     },
   ],
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Module', ModuleSchema);

@@ -1,36 +1,19 @@
 const mongoose = require('mongoose');
 
-/**
- * @typedef {Object} Question
- * @property {number} questionNo - The number of the question.
- * @property {string} question - The text of the question.
- * @property {string} expectedAnswer - The expected answer for the question.
- * @property {string} instruction - Instructions for the question.
- * @property {number} allocatedMarks - The marks allocated for the question.
- */
-
-/**
- * @typedef {Object} ModuleSchema
- * @property {string} moduleName - The name of the module.
- * @property {string} moduleCode - The code of the module.
- * @property {string} batch - The batch associated with the module.
- * @property {string} academicYear - The academic year of the module.
- * @property {string} semester - The semester of the module.
- * @property {Question[]} questions - The list of questions in the module.
- */
+// Define the schema for a module
 const ModuleSchema = new mongoose.Schema({
-  moduleName: String,
-  moduleCode: String,
-  batch: String,
-  academicYear: String,
-  semester: String,
-  questions: [
+  moduleName: String, // Name of the module
+  moduleCode: String, // Unique code for the module
+  batch: String, // Batch associated with the module
+  academicYear: String, // Academic year of the module
+  semester: String, // Semester in which the module is taught
+  questions: [  // Array of questions in the module
     {
-      questionNo: Number,
-      question: String,
-      expectedAnswer: String,
-      instruction: String,
-      allocatedMarks: Number,
+      questionNo: Number, // Question number
+      question: String,  // Question text
+      expectedAnswer: String, // Expected correct answer
+      instruction: String, // Additional grading instructions
+      allocatedMarks: Number, // Marks allocated for the question
     },
   ],
 });

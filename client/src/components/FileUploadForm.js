@@ -11,35 +11,40 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+// Define the FileUploadForm component
 function FileUploadForm({ onLoading }) {
-  const [moduleName, setModuleName] = useState("");
-  const [moduleCode, setModuleCode] = useState("");
-  const [batch, setBatch] = useState("");
-  const [academicYear, setAcademicYear] = useState("");
-  const [semester, setSemester] = useState("");
-  const [markingGuide, setMarkingGuide] = useState(null);
-  const [markingGuideName, setMarkingGuideName] = useState("");
-  const [studentAnswers, setStudentAnswers] = useState(null);
-  const [studentAnswersName, setStudentAnswersName] = useState("");
+  // Define state variables for form fields
+  const [moduleName, setModuleName] = useState(""); // Module name input
+  const [moduleCode, setModuleCode] = useState(""); // Module code input
+  const [batch, setBatch] = useState(""); // Batch dropdown
+  const [academicYear, setAcademicYear] = useState(""); // Academic year dropdown
+  const [semester, setSemester] = useState(""); // Semester dropdown
+  const [markingGuide, setMarkingGuide] = useState(null); // Marking guide file upload
+  const [markingGuideName, setMarkingGuideName] = useState(""); // Name of the uploaded marking guide file
+  const [studentAnswers, setStudentAnswers] = useState(null); // Students' answers file upload
+  const [studentAnswersName, setStudentAnswersName] = useState(""); // Name of the uploaded students' answers file
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Hook for programmatically navigating between routes
 
+  // Function to handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
+    e.preventDefault(); // Prevent the default form submission behavior
+    const formData = new FormData(); // Create a FormData object to send files and data
+    // Append form data to the FormData object
     formData.append("moduleName", moduleName);
     formData.append("moduleCode", moduleCode);
     formData.append("batch", batch);
     formData.append("academicYear", academicYear);
     formData.append("semester", semester);
-    formData.append("markingGuide", markingGuide);
-    formData.append("studentAnswers", studentAnswers);
+    formData.append("markingGuide", markingGuide); // Add marking guide file
+    formData.append("studentAnswers", studentAnswers); // Add students' answers file
 
     try {
-      await axios.post('http://localhost:5000/api/upload', formData);
-      navigate('/loading'); // Navigate to loading page
+      // Send a POST request to the backend to upload files and data
+      await axios.post("http://localhost:5000/api/upload", formData);
+      navigate("/loading"); // Navigate to loading page
     } catch (error) {
-      console.error('File upload failed', error);
+      console.error("File upload failed", error); // Log any errors that occur during the upload
     }
   };
 
@@ -56,12 +61,15 @@ function FileUploadForm({ onLoading }) {
         mx: "auto",
       }}
     >
+      {/* Input for module name */}
       <TextField
         label="Module Name"
         value={moduleName}
         onChange={(e) => setModuleName(e.target.value)}
         required
       />
+
+      {/* Input for module code */}
       <TextField
         label="Module Code"
         value={moduleCode}
@@ -69,6 +77,8 @@ function FileUploadForm({ onLoading }) {
         required
         sx={{ mt: 2 }}
       />
+
+      {/* Dropdown for selecting batch */}
       <FormControl sx={{ mt: 2 }}>
         <InputLabel>Batch</InputLabel>
         <Select
@@ -80,6 +90,8 @@ function FileUploadForm({ onLoading }) {
           <MenuItem value="June">June</MenuItem>
         </Select>
       </FormControl>
+
+      {/* Dropdown for selecting academic year */}
       <FormControl sx={{ mt: 2 }}>
         <InputLabel>Academic Year</InputLabel>
         <Select
@@ -93,6 +105,8 @@ function FileUploadForm({ onLoading }) {
           <MenuItem value="4">4</MenuItem>
         </Select>
       </FormControl>
+
+      {/* Dropdown for selecting semester */}
       <FormControl sx={{ mt: 2 }}>
         <InputLabel>Semester</InputLabel>
         <Select
@@ -104,6 +118,8 @@ function FileUploadForm({ onLoading }) {
           <MenuItem value="2">2</MenuItem>
         </Select>
       </FormControl>
+
+      {/* File upload for marking guide */}
       <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
         <FormControl sx={{ mt: 2 }}>
           <Button
@@ -115,6 +131,7 @@ function FileUploadForm({ onLoading }) {
             <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
               {markingGuideName}
             </span>
+            {/* Hidden input for file upload */}
             <input
               type="file"
               hidden
@@ -128,6 +145,8 @@ function FileUploadForm({ onLoading }) {
             />
           </Button>
         </FormControl>
+
+        {/* File upload for student answers */}
         <FormControl sx={{ mt: 2 }}>
           <Button
             variant="outlined"
@@ -138,6 +157,7 @@ function FileUploadForm({ onLoading }) {
             <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
               {studentAnswersName}
             </span>
+            {/* Hidden input for file upload */}
             <input
               type="file"
               hidden
@@ -152,6 +172,8 @@ function FileUploadForm({ onLoading }) {
           </Button>
         </FormControl>
       </Box>
+
+      {/* Submit button */}
       <Button
         type="submit"
         variant="contained"

@@ -1,4 +1,3 @@
-// controllers/uploadController.js
 const exceljs = require('exceljs');
 const Module = require('../models/Module');
 const Student = require('../models/Student');
@@ -17,6 +16,13 @@ exports.handleFileUpload = async (req, res) => {
     const questions = [];
     markingGuideSheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) { // Skip header
+        /**
+         * Destructures the values from the given row object starting from the second element.
+         *
+         * @param {Object} row - The row object containing the values to be destructured.
+         * @param {Array} row.values - The array of values in the row object.
+         * @returns {Array} An array containing the question number, question, expected answer, instruction, and allocated marks.
+         */
         const [questionNo, question, expectedAnswer, instruction, allocatedMarks] = row.values.slice(1);
         questions.push({
           questionNo,
@@ -29,6 +35,18 @@ exports.handleFileUpload = async (req, res) => {
     });
 
     // Save Module Data
+    /**
+     * Creates a new Module instance with the provided details.
+     * 
+     * @param {string} moduleName - The name of the module.
+     * @param {string} moduleCode - The code of the module.
+     * @param {string} batch - The batch associated with the module.
+     * @param {string} academicYear - The academic year for the module.
+     * @param {string} semester - The semester for the module.
+     * @param {Array} questions - The list of questions for the module.
+     * 
+     * @returns {Module} The newly created Module instance.
+     */
     const module = new Module({
       moduleName,
       moduleCode,

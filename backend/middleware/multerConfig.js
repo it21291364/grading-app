@@ -1,11 +1,9 @@
 const multer = require('multer');
 
-/**
- * Configures multer to use memory storage.
- * Files will be stored in memory as Buffer objects.
- */
+// Use in-memory storage for uploaded files
 const storage = multer.memoryStorage();
 
+// Configure multer with the defined storage settings
 const upload = multer({ storage });
 
 module.exports = upload;

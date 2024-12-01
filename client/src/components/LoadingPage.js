@@ -1,27 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 // Define the LoadingPage component
 function LoadingPage() {
-  const navigate = useNavigate(); // Hook to navigate programmatically between routes
+  const navigate = useNavigate();
+  const [gradingStarted, setGradingStarted] = useState(false);
 
-  // useEffect to start grading as soon as the page loads
   useEffect(() => {
-    // Function to call the backend API to start grading
     const startGrading = async () => {
       try {
-        // Send a GET request to the API to trigger the grading process
-        await axios.get("http://localhost:5000/api/grading/start");
-        navigate("/review"); // Navigate to the review page after grading is completed
+        if (!gradingStarted) {
+          setGradingStarted(true);
+          await axios.get("http://localhost:5000/api/grading/start");
+          navigate("/review");
+        }
       } catch (error) {
         console.error("Grading failed", error);
       }
     };
 
-    startGrading(); // Call the grading function
-  }, [navigate]); // Dependency array ensures the effect runs once on component mount
+    startGrading();
+  }, [navigate, gradingStarted]);
 
   return (
     <Box

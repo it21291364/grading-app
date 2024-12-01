@@ -16,6 +16,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import LoadingPage from "./LoadingPage";
+import LoadingIndicator from "./LoadingIndicator";
 
 // Define the ReviewResults component
 const ReviewResults = () => {
@@ -90,7 +91,7 @@ const ReviewResults = () => {
 
   // Show a loading page if student or module data is not yet available
   if (!studentData || !moduleData) {
-    return <LoadingPage />;
+    return <LoadingIndicator />;
   }
 
   return (

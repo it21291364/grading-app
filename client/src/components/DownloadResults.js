@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
+import LoadingIndicator from "./LoadingIndicator";
 
 // Component to display and download student results
 function DownloadResults() {
@@ -40,6 +41,11 @@ function DownloadResults() {
     fetchResults(); // Call the function to fetch data
   }, []); // Empty dependency array ensures this runs only once
 
+  // Add a loading state check
+  if (!moduleInfo || results.length === 0) {
+    return <LoadingIndicator />;
+  }
+  
   // Function to handle downloading results in different formats
   const handleDownload = async (format) => {
     try {

@@ -33,7 +33,7 @@ This application is a full-stack solution that automates the grading of student 
 
 ## System Diagram
 
-![System Diagram](./assets/GENAI_AutoGrader_Diagram.drawio.png)
+![System Diagram](./assets/GENAI_AutoGrader_Diagram.png)
 
 ## Installation
 
@@ -195,4 +195,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Material-UI**: For the frontend UI components.
 - **Contributors**: Rashen W.G.M. - IT21291364 - 24-25J-175
 
-![University Logo](./assets/sliit-logo.png)
+![University Logo](https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ANew_Logo_of_SLIIT.png&psig=AOvVaw1CHP-BuMFcyN6lTWGqAzEh&ust=1733157157836000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKCEndf_hooDFQAAAAAdAAAAABAI)

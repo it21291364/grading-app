@@ -37,37 +37,59 @@ exports.startGrading = async (req, res) => {
         // Skip grading if the question is not found in the module
         if (!questionObj) continue;
 
+        const instructionLower = questionObj.instruction.toLowerCase();
+
+        if (instructionLower.includes("give full marks")) {
+          // Assign full marks directly
+          answerObj.studentMarks = questionObj.allocatedMarks;
+          answerObj.feedback =
+            "As per the marking guide, full marks are awarded.";
+
+          // Accumulate the student's total marks
+          totalMarks += answerObj.studentMarks;
+
+          continue; // Skip AI evaluation for this question
+        }
+
         // Construct a prompt for OpenAI to evaluate the answer
         const prompt = `
-You are an educational assistant that evaluates student responses based on their conceptual correctness and completeness, providing a score and feedback.
+        You are an educational assistant that strictly follows the instructions provided in the marking guide when grading student answers.
+        
+        **Important Instructions (Highest Priority):**
+        
+        - ${questionObj.instruction}
+        
+        **Note:**
+        
+        - Always prioritize the marking guide instructions above all else.
+        - When grading, compare the student's answer with the expected answer provided.
+        - If the student's answer does not address the question, is irrelevant, or indicates they do not know the answer (e.g., "I don't know"), award 0 marks.
 
-When grading, please:
-
-- **Consider the Instructions provided in the marking guide**.
-- **Ignore spelling and grammar mistakes**.
-- **If the student's answer satisfactorily addresses the question and meets the instructions, award full marks**.
-
-Below are the details:
-
-**Question**: ${questionObj.question}
-**Expected Answer**: ${questionObj.expectedAnswer}
-**Instruction**: ${questionObj.instruction}
-**Allocated Marks**: ${questionObj.allocatedMarks}
-
-**Student Answer**: ${answerObj.studentAnswer}
-
-Please provide:
-
-- **Marks Awarded**: A number between 0 and ${questionObj.allocatedMarks}.
-- **Feedback**: Brief feedback explaining the reason for the assigned score.
-
-Provide the output in the following JSON format:
-
-{
-  "Marks Awarded": <number>,
-  "Feedback": "<feedback text>"
-}
-`;
+        **Question Details:**
+        
+        - **Question**: ${questionObj.question}
+        - **Expected Answer**: ${questionObj.expectedAnswer}
+        - **Allocated Marks**: ${questionObj.allocatedMarks}
+        
+        **Student's Answer:**
+        
+        ${answerObj.studentAnswer}
+        
+        **Guidelines (Secondary Priority):**
+        
+        - Ignore spelling and grammar mistakes.
+        - Focus on the content and accuracy of the student's answer.
+        - Provide constructive feedback explaining the reason for the assigned score.
+        
+        **Response Format:**
+        
+        Provide your response in the following JSON format:
+        
+        {
+          "Marks Awarded": <number between 0 and ${questionObj.allocatedMarks}>,
+          "Feedback": "<feedback text>"
+        }
+        `;
 
         try {
           // Send grading request to OpenAI
@@ -134,8 +156,8 @@ Provide the output in the following JSON format:
  */
 exports.getStudentResults = async (req, res) => {
   try {
-    const { studentId, moduleId  } = req.params; // Extract student ID from the request parameters
-    const student = await Student.findOne({ studentId, moduleId  }); // Find the student document
+    const { studentId, moduleId } = req.params; // Extract student ID from the request parameters
+    const student = await Student.findOne({ studentId, moduleId }); // Find the student document
 
     // Return 404 if the student is not found
     if (!student) {
@@ -161,11 +183,11 @@ exports.getStudentResults = async (req, res) => {
  */
 exports.updateStudentResults = async (req, res) => {
   try {
-    const { studentId, moduleId  } = req.params; // Extract student ID from the request parameters
+    const { studentId, moduleId } = req.params; // Extract student ID from the request parameters
     const { answers } = req.body; // Extract updated answers from the request body
 
     // Find the student record in the database
-    const student = await Student.findOne({ studentId, moduleId  });
+    const student = await Student.findOne({ studentId, moduleId });
 
     // Return 404 if the student is not found
     if (!student) {
@@ -196,7 +218,7 @@ exports.updateStudentResults = async (req, res) => {
 exports.getStudentList = async (req, res) => {
   try {
     const { moduleId } = req.params; // Extract module ID from the request parameters
-    const students = await Student.find({moduleId}, "studentId"); // Fetch all student IDs
+    const students = await Student.find({ moduleId }, "studentId"); // Fetch all student IDs
     res.status(200).json({ students }); // Respond with the student list
   } catch (error) {
     console.error("Failed to fetch student list", error);
@@ -211,8 +233,8 @@ exports.getStudentList = async (req, res) => {
 exports.downloadResults = async (req, res) => {
   try {
     const { format, moduleId } = req.params; // Extract the desired format from the request parameters
-    const students = await Student.find({moduleId }); // Retrieve all student records from the database
-    const module = await Module.findById(moduleId ); // Retrieve the module data (assumes only one module)
+    const students = await Student.find({ moduleId }); // Retrieve all student records from the database
+    const module = await Module.findById(moduleId); // Retrieve the module data (assumes only one module)
 
     if (!module) {
       return res.status(404).json({ error: "Module not found" });
@@ -286,8 +308,8 @@ exports.downloadResults = async (req, res) => {
 exports.getAllStudentResults = async (req, res) => {
   try {
     const { moduleId } = req.params; // Extract module ID from the request parameters
-    const students = await Student.find({moduleId }); // Retrieve all student records from the database
-    const module = await Module.findById(moduleId ); // Retrieve the module data (assumes only one module)
+    const students = await Student.find({ moduleId }); // Retrieve all student records from the database
+    const module = await Module.findById(moduleId); // Retrieve the module data (assumes only one module)
 
     if (!module) {
       return res.status(404).json({ error: "Module not found" });

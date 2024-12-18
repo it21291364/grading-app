@@ -18,60 +18,54 @@ import { useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import LoadingIndicator from "./LoadingIndicator";
 
-// Component to display and download student results
 function DownloadResults() {
-  const navigate = useNavigate(); // Hook to navigate between pages
-  const [results, setResults] = useState([]); // State to store student results
-  const [moduleInfo, setModuleInfo] = useState(null); // State to store module information
+  const navigate = useNavigate();
+  const [results, setResults] = useState([]);
+  const [moduleInfo, setModuleInfo] = useState(null);
 
-  // Fetch results and module information when the component loads
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const moduleId = localStorage.getItem('moduleId');
+        const moduleId = localStorage.getItem("moduleId");
         const response = await axios.get(
           `http://localhost:5000/api/grading/students/results/${moduleId}`
         );
         setResults(response.data.results);
         setModuleInfo(response.data.module);
       } catch (error) {
-        console.error('Failed to fetch results', error);
+        console.error("Failed to fetch results", error);
       }
     };
+    fetchResults();
+  }, []);
 
-    fetchResults(); // Call the function to fetch data
-  }, []); // Empty dependency array ensures this runs only once
-
-  // Add a loading state check
   if (!moduleInfo || results.length === 0) {
     return <LoadingIndicator />;
   }
-  
-  // Function to handle downloading results in different formats
+
   const handleDownload = async (format) => {
     try {
-      const moduleId = localStorage.getItem('moduleId');
+      const moduleId = localStorage.getItem("moduleId");
       const response = await axios.get(
         `http://localhost:5000/api/grading/download/${moduleId}/${format}`,
         {
-          responseType: "blob", // Ensure the response is treated as a file blob
+          responseType: "blob",
         }
       );
 
-      // Create a URL for the downloaded file
       const url = window.URL.createObjectURL(new Blob([response.data]));
-
-      // Create a link and click it to start the download
-      const link = document.createElement("a"); // Create a download link element
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute(
-        "download",
-        `results.${format === "excel" ? "xlsx" : format}`
-      ); // Set the download file name
-      document.body.appendChild(link); // Append the link to the document
-      link.click(); // Trigger the download
+
+      // Build the file name using module info
+      const fileExtension = format === "excel" ? "xlsx" : "pdf";
+      const fileName = `${moduleInfo.moduleName}_${moduleInfo.moduleCode}_${moduleInfo.academicYear}_${moduleInfo.semester}_${moduleInfo.batch}.${fileExtension}`;
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
     } catch (error) {
-      console.error("Download failed", error); // Log errors if download fails
+      console.error("Download failed", error);
     }
   };
 
@@ -85,51 +79,32 @@ function DownloadResults() {
         }}
       >
         <Tooltip title="Home">
-          {/* Home button for navigation */}
-          <IconButton
-            onClick={() => navigate("/")}
-            color="primary"
-            sx={{ mr: 2, fontSize: 40 }}
-          >
+          <IconButton onClick={() => navigate("/")} color="primary" sx={{ mr: 2, fontSize: 40 }}>
             <HomeIcon sx={{ fontSize: 40 }} />
           </IconButton>
         </Tooltip>
-        {/* Header for the page */}
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ flexGrow: 1, textAlign: "center" }}
-        >
+        <Typography variant="h4" gutterBottom sx={{ flexGrow: 1, textAlign: "center" }}>
           Results Summary
         </Typography>
       </Box>
 
-      {/* Display module information if available */}
       {moduleInfo && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body1">
             Module Name: {moduleInfo.moduleName}
           </Typography>
-          <Typography variant="body1">
-            Module Code: {moduleInfo.moduleCode}
-          </Typography>
-          <Typography variant="body1">
-            Academic Year: {moduleInfo.academicYear}
-          </Typography>
-          <Typography variant="body1">
-            Semester: {moduleInfo.semester}
-          </Typography>
+          <Typography variant="body1">Module Code: {moduleInfo.moduleCode}</Typography>
+          <Typography variant="body1">Academic Year: {moduleInfo.academicYear}</Typography>
+          <Typography variant="body1">Semester: {moduleInfo.semester}</Typography>
           <Typography variant="body1">Batch: {moduleInfo.batch}</Typography>
         </Box>
       )}
 
-      {/* Table to display results */}
       <TableContainer component={Paper} sx={{ mb: 4 }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Student ID</TableCell>
-              {/* Dynamically generate headers for each question */}
               {moduleInfo &&
                 moduleInfo.questions.map((question) => (
                   <TableCell key={question.questionNo}>
@@ -140,13 +115,11 @@ function DownloadResults() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* Map over results to create rows */}
             {results.map((student) => (
               <TableRow key={student.studentId}>
                 <TableCell>{student.studentId}</TableCell>
                 {moduleInfo &&
                   moduleInfo.questions.map((question) => {
-                    // Find the student's answer for each question
                     const answer = student.answers.find(
                       (ans) => ans.questionNo === question.questionNo
                     );
@@ -163,28 +136,20 @@ function DownloadResults() {
         </Table>
       </TableContainer>
 
-      {/* Download options */}
       <Typography variant="h5" gutterBottom sx={{ textAlign: "center" }}>
         Download Results
       </Typography>
       <Typography variant="body1" sx={{ mb: 4, textAlign: "center" }}>
         Please choose a format to download the student results.
       </Typography>
-      {/* Buttons for each file format */}
       <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-        <Button
-          variant="contained"
-          onClick={() => handleDownload("csv")}
-          sx={{ bgcolor: "#404040" }}
-        >
-          CSV
-        </Button>
+        {/* Removed CSV button */}
         <Button
           variant="contained"
           onClick={() => handleDownload("excel")}
           sx={{ bgcolor: "#404040" }}
         >
-          Excel
+          XLSX
         </Button>
         <Button
           variant="contained"

@@ -2,7 +2,8 @@ const Student = require("../models/Student");
 const Module = require("../models/Module");
 const ExcelJS = require("exceljs"); // Library for generating and working with Excel files
 const OpenAI = require("openai"); // OpenAI library for grading using GPT
-
+const PDFDocument = require("pdfkit");
+const path = require("path");
 /**
  * Function to start grading students' answers.
  * Iterates through students, evaluates their answers using OpenAI, and updates marks and feedback.
@@ -232,70 +233,145 @@ exports.getStudentList = async (req, res) => {
  */
 exports.downloadResults = async (req, res) => {
   try {
-    const { format, moduleId } = req.params; // Extract the desired format from the request parameters
-    const students = await Student.find({ moduleId }); // Retrieve all student records from the database
-    const module = await Module.findById(moduleId); // Retrieve the module data (assumes only one module)
+    const { format, moduleId } = req.params;
+    const students = await Student.find({ moduleId });
+    const module = await Module.findById(moduleId);
 
     if (!module) {
       return res.status(404).json({ error: "Module not found" });
     }
 
-    // Check the requested format and handle accordingly
-    if (format === "excel") {
-      const workbook = new ExcelJS.Workbook(); // Create a new Excel workbook
-      const worksheet = workbook.addWorksheet("Results"); // Add a worksheet titled "Results"
+    // Updated fileName as per your request
+    const fileName = `${module.moduleName}_${module.moduleCode}_${module.academicYear}_${module.semester}_${module.batch}`;
 
-      // Add module details to the top of the worksheet
+    if (format === "excel") {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Results");
+
+      // Module details
       worksheet.addRow(["Module Name", module.moduleName]);
       worksheet.addRow(["Module Code", module.moduleCode]);
       worksheet.addRow(["Academic Year", module.academicYear]);
       worksheet.addRow(["Semester", module.semester]);
       worksheet.addRow(["Batch", module.batch]);
-      worksheet.addRow([]); // Empty row for spacing
+      worksheet.addRow([]);
 
-      // Prepare the header row for the results table
       const headerRow = [
-        "Student ID", // First column is for student IDs
-        ...module.questions.map((q) => `Q${q.questionNo} Marks`), // Add a column for each question's marks
-        "Total Marks", // Final column is for total marks
+        "Student ID",
+        ...module.questions.map((q) => `Q${q.questionNo} Marks`),
+        "Total Marks",
       ];
 
-      worksheet.addRow(headerRow); // Add the header row to the worksheet
+      const header = worksheet.addRow(headerRow);
+      header.font = { bold: true };
 
-      // Add data rows for each student
       students.forEach((student) => {
         const row = [
-          student.studentId, // Add the student's ID
+          student.studentId,
           ...module.questions.map((q) => {
-            // Find the student's answer for each question
             const answer = student.answers.find(
               (ans) => ans.questionNo === q.questionNo
             );
-            return answer ? answer.studentMarks : "N/A"; // Add the marks or 'N/A' if not available
+            return answer ? answer.studentMarks : "N/A";
           }),
-          student.totalMarks, // Add the total marks
+          student.totalMarks,
         ];
         worksheet.addRow(row);
       });
 
-      // Set the response headers for Excel file download
       res.setHeader(
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       );
-      res.setHeader("Content-Disposition", "attachment; filename=results.xlsx");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}.xlsx"`
+      );
 
       await workbook.xlsx.write(res);
       res.end();
-    } else if (format === "csv") {
-      // Implement CSV download logic
     } else if (format === "pdf") {
-      // Implement PDF download logic
+      const doc = new PDFDocument({
+        margin: 50,
+        size: "A4",
+      });
+
+      // Set headers for PDF
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}.pdf"`);
+
+      // Pipe PDF data to response
+      doc.pipe(res);
+
+      // Module details
+      doc.font("Helvetica-Bold").fontSize(14).text("Module Details", { underline: true });
+      doc.moveDown();
+      doc.font("Helvetica").fontSize(12).text(`Module Name: ${module.moduleName}`);
+      doc.text(`Module Code: ${module.moduleCode}`);
+      doc.text(`Academic Year: ${module.academicYear}`);
+      doc.text(`Semester: ${module.semester}`);
+      doc.text(`Batch: ${module.batch}`);
+      doc.moveDown(2);
+
+      // Prepare table headers
+      const headers = [
+        { label: "Student ID", width: 100 },
+        ...module.questions.map((q) => ({ label: `Q${q.questionNo}`, width: 50 })),
+        { label: "Total Marks", width: 80 },
+      ];
+
+      const tableX = doc.x;
+      let tableY = doc.y;
+
+      // Set stroke and line width once
+      doc.strokeColor("black").lineWidth(1);
+
+      // Draw header row
+      doc.font("Helvetica-Bold");
+      let currentX = tableX;
+      let currentY = tableY;
+      const headerHeight = 20;
+
+      headers.forEach((header) => {
+        doc.rect(currentX, currentY, header.width, headerHeight).stroke();
+        doc.text(header.label, currentX + 5, currentY + 5, { width: header.width - 10, align: 'left' });
+        currentX += header.width;
+      });
+
+      currentY += headerHeight;
+      doc.font("Helvetica");
+
+      // Draw table rows
+      students.forEach((student) => {
+        let rowX = tableX;
+        const rowHeight = 20;
+
+        const rowData = [
+          student.studentId,
+          ...module.questions.map((q) => {
+            const answer = student.answers.find((ans) => ans.questionNo === q.questionNo);
+            return answer ? answer.studentMarks : "N/A";
+          }),
+          student.totalMarks,
+        ];
+
+        rowData.forEach((data, i) => {
+          const colWidth = headers[i].width;
+          // Draw cell border
+          doc.rect(rowX, currentY, colWidth, rowHeight).stroke();
+          // Write cell text
+          doc.text(`${data}`, rowX + 5, currentY + 5, { width: colWidth - 10, align: 'left' });
+          rowX += colWidth;
+        });
+
+        currentY += rowHeight;
+      });
+
+      doc.end();
     } else {
       res.status(400).json({ error: "Invalid format" });
     }
   } catch (error) {
-    // Log and return an error response if the download process fails
     console.error("Failed to download results", error);
     res.status(500).json({ error: "Failed to download results" });
   }

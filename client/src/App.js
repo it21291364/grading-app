@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import FileUploadForm from "./components/FileUploadForm";
 import LoadingPage from "./components/LoadingPage";
 import ReviewResults from "./components/ReviewResults";
 import DownloadResults from "./components/DownloadResults";
+import EditMarkingGuide from './components/EditMarkingGuide';
 
 function App() {
   return (
@@ -11,6 +12,8 @@ function App() {
       <Routes>
         {/* Define the route for the file upload form */}
         <Route path="/" element={<FileUploadForm />} />
+
+        <Route path="/editMarkingGuide" element={<EditMarkingGuide />} />
 
         {/* Define the route for the loading page */}
         <Route path="/loading" element={<LoadingPage />} />

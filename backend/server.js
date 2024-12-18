@@ -6,6 +6,7 @@ const cors = require('cors');
 // Import route handlers
 const uploadRoutes = require('./routes/upload');
 const gradingRoutes = require('./routes/grading');
+const moduleRoutes = require('./routes/module');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors());
 // Define routes for file uploads and grading operations
 app.use('/api/upload', uploadRoutes);
 app.use('/api/grading', gradingRoutes);
+app.use('/api/module', moduleRoutes);
 
 // Connect to MongoDB using credentials from the environment
 mongoose.connect(process.env.MONGODB_URI, {

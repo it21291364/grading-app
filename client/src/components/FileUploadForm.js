@@ -47,7 +47,7 @@ function FileUploadForm({ onLoading }) {
       const moduleId = response.data.moduleId; // Get moduleId from the response
       // Store moduleId for use in other components (e.g., local storage)
       localStorage.setItem("moduleId", moduleId);
-      navigate("/loading"); // Navigate to loading page
+      navigate("/editMarkingGuide"); // Navigate to loading page
     } catch (error) {
       console.error("File upload failed", error);
     }
